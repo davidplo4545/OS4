@@ -84,7 +84,7 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/mnt/c/Users/david/Desktop/Operating Systems/OS4/main.cpp">
+		<Unit filename="/mnt/c/Users/david/Desktop/Operating Systems/OS4/malloc_3.cpp">
 			<Option target="OS4"/>
 		</Unit>
 		<Unit filename="/mnt/c/Users/david/Desktop/Operating Systems/OS4/CMakeLists.txt">

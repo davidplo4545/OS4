@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/mnt/c/Users/david/Desktop/Operating Systems/OS4/main.cpp" "CMakeFiles/OS4.dir/main.cpp.o" "gcc" "CMakeFiles/OS4.dir/main.cpp.o.d"
+  "/mnt/c/Users/david/Desktop/Operating Systems/OS4/malloc_3.cpp" "CMakeFiles/OS4.dir/malloc_3.cpp.o" "gcc" "CMakeFiles/OS4.dir/malloc_3.cpp.o.d"
   )
 
 # Targets to which this target links.

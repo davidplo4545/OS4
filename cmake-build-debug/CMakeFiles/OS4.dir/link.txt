@@ -1,1 +1,1 @@
-/usr/bin/c++ -g CMakeFiles/OS4.dir/main.cpp.o -o OS4 
+/usr/bin/c++ -g CMakeFiles/OS4.dir/malloc_3.cpp.o -o OS4 

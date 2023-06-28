@@ -69,28 +69,28 @@ include CMakeFiles/OS4.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/OS4.dir/flags.make
 
-CMakeFiles/OS4.dir/main.cpp.o: CMakeFiles/OS4.dir/flags.make
-CMakeFiles/OS4.dir/main.cpp.o: ../main.cpp
-CMakeFiles/OS4.dir/main.cpp.o: CMakeFiles/OS4.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/david/Desktop/Operating Systems/OS4/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/OS4.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS4.dir/main.cpp.o -MF CMakeFiles/OS4.dir/main.cpp.o.d -o CMakeFiles/OS4.dir/main.cpp.o -c "/mnt/c/Users/david/Desktop/Operating Systems/OS4/main.cpp"
+CMakeFiles/OS4.dir/malloc_3.cpp.o: CMakeFiles/OS4.dir/flags.make
+CMakeFiles/OS4.dir/malloc_3.cpp.o: ../malloc_3.cpp
+CMakeFiles/OS4.dir/malloc_3.cpp.o: CMakeFiles/OS4.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/david/Desktop/Operating Systems/OS4/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/OS4.dir/malloc_3.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS4.dir/malloc_3.cpp.o -MF CMakeFiles/OS4.dir/malloc_3.cpp.o.d -o CMakeFiles/OS4.dir/malloc_3.cpp.o -c "/mnt/c/Users/david/Desktop/Operating Systems/OS4/malloc_3.cpp"
 
-CMakeFiles/OS4.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/OS4.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/mnt/c/Users/david/Desktop/Operating Systems/OS4/main.cpp" > CMakeFiles/OS4.dir/main.cpp.i
+CMakeFiles/OS4.dir/malloc_3.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/OS4.dir/malloc_3.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/mnt/c/Users/david/Desktop/Operating Systems/OS4/malloc_3.cpp" > CMakeFiles/OS4.dir/malloc_3.cpp.i
 
-CMakeFiles/OS4.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/OS4.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/c/Users/david/Desktop/Operating Systems/OS4/main.cpp" -o CMakeFiles/OS4.dir/main.cpp.s
+CMakeFiles/OS4.dir/malloc_3.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/OS4.dir/malloc_3.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/c/Users/david/Desktop/Operating Systems/OS4/malloc_3.cpp" -o CMakeFiles/OS4.dir/malloc_3.cpp.s
 
 # Object files for target OS4
 OS4_OBJECTS = \
-"CMakeFiles/OS4.dir/main.cpp.o"
+"CMakeFiles/OS4.dir/malloc_3.cpp.o"
 
 # External object files for target OS4
 OS4_EXTERNAL_OBJECTS =
 
-OS4: CMakeFiles/OS4.dir/main.cpp.o
+OS4: CMakeFiles/OS4.dir/malloc_3.cpp.o
 OS4: CMakeFiles/OS4.dir/build.make
 OS4: CMakeFiles/OS4.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/mnt/c/Users/david/Desktop/Operating Systems/OS4/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable OS4"

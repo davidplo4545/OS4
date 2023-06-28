@@ -129,29 +129,29 @@ OS4/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/build
 .PHONY : OS4/fast
 
-main.o: main.cpp.o
-.PHONY : main.o
+malloc_3.o: malloc_3.cpp.o
+.PHONY : malloc_3.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/main.cpp.o
-.PHONY : main.cpp.o
+malloc_3.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/malloc_3.cpp.o
+.PHONY : malloc_3.cpp.o
 
-main.i: main.cpp.i
-.PHONY : main.i
+malloc_3.i: malloc_3.cpp.i
+.PHONY : malloc_3.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/main.cpp.i
-.PHONY : main.cpp.i
+malloc_3.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/malloc_3.cpp.i
+.PHONY : malloc_3.cpp.i
 
-main.s: main.cpp.s
-.PHONY : main.s
+malloc_3.s: malloc_3.cpp.s
+.PHONY : malloc_3.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/main.cpp.s
-.PHONY : main.cpp.s
+malloc_3.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS4.dir/build.make CMakeFiles/OS4.dir/malloc_3.cpp.s
+.PHONY : malloc_3.cpp.s
 
 # Help Target
 help:
@@ -162,9 +162,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... OS4"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... malloc_3.o"
+	@echo "... malloc_3.i"
+	@echo "... malloc_3.s"
 .PHONY : help
 
 
