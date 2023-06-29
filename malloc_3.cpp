@@ -9,6 +9,7 @@ const int MAX_BLOCK_MEMORY = 128000;
 const int NUM_OF_MAX_BLOCK_SIZE = 32;
 const int HEAP_SIZE = MAX_BLOCK_MEMORY*NUM_OF_MAX_BLOCK_SIZE;
 const int AMOUNT_OF_BLOCK_TYPES = 11;
+const int MIN_SIZE = 128;
 
 void* heap_bottom;
 bool is_first_malloc = true;
@@ -21,49 +22,141 @@ struct MallocMetadata {
     MallocMetadata* prev;
 };
 
-void addNewBlock()
+void setMetaData(MallocMetadata* metadata,size_t size, bool is_free)
 {
-
+    metadata->size = size -sizeof(MallocMetadata);
+    metadata->is_free = is_free;
 }
 
-void removeBlock()
-{
 
-}
 
 
 MallocMetadata* block_array[AMOUNT_OF_BLOCK_TYPES];
 
-
-void setMetaData(MallocMetadata* metadata,size_t size, bool is_free)
+MallocMetadata* findBestFit(size_t size, int* power, int* currIndex)
 {
-    metadata->size = size;
-    metadata->is_free = is_free;
+    for(int i=0;i<AMOUNT_OF_BLOCK_TYPES;i++)
+    {
+        if(size <= *power * MIN_SIZE)
+        {
+            if(block_array[i])
+            {
+                *currIndex = i;
+                return block_array[i];
+            }
+        }
+        *power*=2;
+    }
 }
 
-void
-//void* searchFreeBlock(size_t reqSize) {
-//    MallocMetadata* current = list_head;
-//    while (current != nullptr) {
-//        if (current->size >= reqSize && current->is_free) {
-//            current->is_free = false;
-//            return (void*)((char*)current + sizeof(MallocMetadata));
-//        }
-//        current = current->next;
-//    }
-//    return nullptr;
-//}
-//
-//void addMetaData(MallocMetadata* new_meta_data) {
-//    if(!list_head)
-//    {
-//        list_head = new_meta_data;
-//        list_last = new_meta_data;
-//        return;
-//    }
-//    list_last->next = new_meta_data;
-//    list_last = new_meta_data;
-//}
+long getAddress(MallocMetadata* ptr)
+{
+    return long(ptr);
+}
+
+void addBlockToFreeList(MallocMetadata* blockMetaData, int blockIndex)
+{
+    MallocMetadata* curr = block_array[blockIndex];
+    if(!curr) {
+        curr = blockMetaData;
+        return;
+    }
+    while(curr->next && getAddress(curr) < getAddress(blockMetaData))
+        curr = curr->next;
+
+    // all blocks have lower address than the given one
+    if(!curr->next)
+    {
+        blockMetaData->next = nullptr;
+        blockMetaData->prev = curr;
+        curr->next = blockMetaData;
+        return;
+    }
+    // all blocks have higher address than the given one
+    if(!curr->prev)
+    {
+        blockMetaData->next = curr;
+        curr->prev = blockMetaData;
+        block_array[blockIndex] = blockMetaData;
+        return;
+    }
+
+    // Set the block below the next higher address and after the lowest address after mine
+    MallocMetadata* temp = curr->prev;
+    curr->prev = blockMetaData;
+    blockMetaData->next = curr;
+    blockMetaData->prev = temp;
+    temp->next = blockMetaData;
+}
+
+MallocMetadata* addBlockToMemory(void* ptr,size_t size, bool is_free)
+{
+    MallocMetadata* new_ptr = (MallocMetadata*)(ptr);
+    setMetaData(new_ptr, size, is_free);
+}
+
+void removeBlockFromFreeList(MallocMetadata* currBlock, int blockIndex)
+{
+    setMetaData(currBlock, currBlock->size, false);
+    MallocMetadata* temp = currBlock->prev;
+    if(temp){
+        if(!currBlock->next)
+        {
+            temp->next = nullptr;
+            currBlock->next = nullptr;
+            currBlock->prev = nullptr;
+            return;
+        }
+        temp->next = currBlock->next;
+        (currBlock->next)->prev = temp;
+        currBlock->next = nullptr;
+        currBlock->prev = nullptr;
+    } else {
+        if(!currBlock->next){
+            block_array[blockIndex] = nullptr;
+            currBlock->next = nullptr;
+            currBlock->prev = nullptr;
+            return;
+        }
+        currBlock->next->prev = nullptr;
+        block_array[blockIndex] = currBlock->next;
+        currBlock->next = nullptr;
+        currBlock->prev = nullptr;
+    }
+
+
+
+}
+
+MallocMetadata* getNextBlock(MallocMetadata* oldPtr,size_t new_size)
+{
+    return (MallocMetadata*)(getAddress(oldPtr) + new_size);
+}
+MallocMetadata* splitBlock(MallocMetadata* currBlock, int blockPower, int blockIndex)
+{
+    size_t old_size = currBlock->size;
+    // remove old block
+    removeBlockFromFreeList(currBlock, blockIndex);
+    // add 2 blocks = half size in the heap memory and add 1 to free list
+    // currBlock becomes the next half size block
+    setMetaData(currBlock, old_size / 2, true);
+    addBlockToFreeList(currBlock, blockIndex - 1);
+    MallocMetadata* secondBlock = getNextBlock(currBlock, old_size / 2);
+    setMetaData(secondBlock, old_size/2, false);
+}
+void* allocateSize(size_t size)
+{
+    int power = 1, currIndex = 0;
+    MallocMetadata* metaData = findBestFit(size,&power, &currIndex);
+    // TODO: check what if (!metaData)
+    while(currIndex > 0 && (power * MIN_SIZE) / 2 >= size)
+    {
+        splitBlock( metaData, power, currIndex);
+        currIndex--;
+        power/=2;
+    }
+}
+
 
 void* incVoidPtr(void* old_p,int size)
 {
@@ -125,40 +218,43 @@ void* smalloc(size_t size)
         if(!new_ptr) return nullptr;
         is_first_malloc = false;
     }
-    // search free block in list
-//    void* freeMetaDataPtr = searchFreeBlock(size);
-//    // if found override data
-//    if(freeMetaDataPtr)
-//    {
-//        return freeMetaDataPtr;
-//    }
-//
-//    // writing meta data
-//    void* new_ptr = sbrk(sizeof(MallocMetadata));
-//    if(new_ptr == (void*)-1) return nullptr;
-//    MallocMetadata* new_data = (MallocMetadata*)(new_ptr);
-//    setMetaData(new_data, size, false);
-//    // add meta data to list
-//    addMetaData(new_data);
-//
-//    // writing the data
-//    new_ptr = sbrk(size);
-//    if(new_ptr == (void*)-1) return nullptr;
-//    return new_ptr;
+
+    void* new_ptr;
+    if(size >= MAX_BLOCK_MEMORY)
+    {
+        // TODO: handle memory region here
+        return nullptr;
+    }
+
+    new_ptr = allocateSize(size + sizeof(MallocMetadata));
+    return new_ptr;
 }
+
 void* scalloc(size_t num, size_t size)
 {
     void* new_ptr = smalloc(size*num);
     if(!new_ptr) return nullptr;
 
-    memset(new_ptr, 0, size);
+    memset(new_ptr, 0, size*num);
     return new_ptr;
 }
+
+
 void sfree(void* p)
 {
     if(!p) return;
-    MallocMetadata* metaData = (MallocMetadata*)((char*)p - sizeof(MallocMetadata));
-    metaData->is_free = true;
+
+    // check if pointer is free (convert pointer to Malloc type and check boolean)
+
+    // check if buddy exists using the address (getAddress) is inside the free list (important)
+    // if it does exist remove him from free list and call UniteBlocks()
+    // run the above logic while there is a buddy and the block index is under 10
+    // (update the is_free boolean)
+
+
+    // after the while loop add the new block to the free list
+    // and update its meta data
+    //    metaData->is_free = true;
 }
 void* srealloc(void* oldp, size_t size)
 {
