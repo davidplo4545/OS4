@@ -86,7 +86,7 @@ void* scalloc(size_t num, size_t size)
     void* new_ptr = smalloc(size*num);
     if(!new_ptr) return nullptr;
 
-    memset(new_ptr, 0, size);
+    memset(new_ptr, 0, size*num);
     return new_ptr;
 }
 void sfree(void* p)
@@ -144,7 +144,7 @@ size_t _num_allocated_blocks()
     MallocMetadata* current = list_head;
     int counter = 0;
     while (current != nullptr) {
-        counter+=!(current->is_free);
+        counter+=1;
         current = current->next;
     }
     return counter;
@@ -154,7 +154,7 @@ size_t _num_allocated_bytes()
     MallocMetadata* current = list_head;
     int sum = 0;
     while (current != nullptr) {
-        sum+=current->is_free ? 0: current->size;
+        sum+=current->size;
         current = current->next;
     }
     return sum;
