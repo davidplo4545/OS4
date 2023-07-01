@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/OS4.dir/malloc_3.cpp.o"
-  "CMakeFiles/OS4.dir/malloc_3.cpp.o.d"
   "OS4"
   "OS4.pdb"
 )

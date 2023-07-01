@@ -16,8 +16,8 @@ const int MIN_SIZE = 128;
 void *heap_bottom;
 
 bool is_first_malloc = true;
-int num_allocated_blocks;
-int num_allocated_bytes;
+int num_allocated_blocks = 0;
+int num_allocated_bytes = 0;
 struct MallocMetadata {
     int cookie;
     size_t size;
@@ -81,6 +81,8 @@ MallocMetadata *findBestFit(size_t size, int *power, int *currIndex) {
         }
         *power *= 2;
     }
+    //shouldn't get here
+    return nullptr;
 }
 
 long getAddress(MallocMetadata *ptr) {
@@ -164,6 +166,7 @@ MallocMetadata *splitBlock(MallocMetadata *currBlock, int blockPower, int blockI
 }
 
 int getBlockIndex(size_t size) {
+    //remember when we call this function with a size we need to add the size of metadata before
     int power = 1, index = 0;
     while (index < AMOUNT_OF_BLOCK_TYPES && power * MIN_SIZE < size) {
         power *= 2;
@@ -173,10 +176,12 @@ int getBlockIndex(size_t size) {
 }
 
 void *allocateSize(size_t size) {
+    //we get the size + metadata size here
     int power = 1, currIndex = 0;
+    // we change currIndex inside the findBestFit function because we pass a pointer
     MallocMetadata *metaData = findBestFit(size, &power, &currIndex);
-    currIndex = getBlockIndex(metaData->size);
     // TODO: check what if (!metaData)
+    //this check is ok because size = meta.size + sizeof(meta)
     while (currIndex > 0 && (power * MIN_SIZE) / 2 >= size) {
         metaData = splitBlock(metaData, power, currIndex);
         currIndex--;
@@ -240,7 +245,7 @@ void *smalloc(size_t size) {
     }
 
     void *new_ptr;
-    if (size >= MAX_BLOCK_MEMORY) {
+    if (size + sizeof (MallocMetadata) >= MAX_BLOCK_MEMORY) {
         // TODO: handle memory region here
         MallocMetadata *data = (MallocMetadata*)mmap(NULL, size +sizeof(MallocMetadata),
                               PROT_READ | PROT_WRITE, MAP_ANONYMOUS,
@@ -266,10 +271,11 @@ void *scalloc(size_t num, size_t size) {
 
 MallocMetadata *getBuddyBlock(MallocMetadata *currMetaData) {
     long addr = (long) currMetaData;
-    size_t size = currMetaData->size;
+    //I think this needs to be the size of the block for XOR to work so added metadata size
+    size_t size = currMetaData->size + sizeof(MallocMetadata);
     long buddyAddr = size ^ addr;
 
-    // find buddy in free list
+    // block_array returns the actual pointer to the correct place (before metadata) so we dont need to do curr - sizeof(metadata)
     MallocMetadata *curr = block_array[getBlockIndex(size)];
     while (curr) {
         if (buddyAddr == (long) curr) break;
@@ -291,8 +297,8 @@ MallocMetadata* sfree_aux(void *p, bool is_realloc = false, size_t size=0)
 {
     if (!p) return nullptr;
 
-    // check if pointer is free (convert pointer to Malloc type and check boolean)
-    MallocMetadata *currMetaData = (MallocMetadata *) p;
+    // I think we need to do p - metadatasize for this to work
+    MallocMetadata *currMetaData = (MallocMetadata *) ((char *)p - sizeof(MallocMetadata));
     if(currMetaData->size+sizeof(currMetaData) > 128000)
     {
         removeBlockFroMemoryList(currMetaData);
@@ -305,13 +311,15 @@ MallocMetadata* sfree_aux(void *p, bool is_realloc = false, size_t size=0)
     // if it does exist remove the buddy from free list and call UniteBlocks()
     // run this logic while there is a buddy and the block index is under 10
     MallocMetadata *buddyBlock = getBuddyBlock(currMetaData);
-    while (buddyBlock && getBlockIndex(buddyBlock->size) < AMOUNT_OF_BLOCK_TYPES - 1) {
-        removeBlockFromFreeList(buddyBlock, getBlockIndex(buddyBlock->size));
+    while (buddyBlock && getBlockIndex(buddyBlock->size + sizeof(MallocMetadata)) < AMOUNT_OF_BLOCK_TYPES - 1) {
+        removeBlockFromFreeList(buddyBlock, getBlockIndex(buddyBlock->size + sizeof(MallocMetadata)));
 
         if ((long) currMetaData > (long) buddyBlock) {
             currMetaData = buddyBlock;
         }
-        setMetaData(currMetaData, currMetaData->size*2);
+        //changed the new size to be correct
+        long newSize = (currMetaData->size+sizeof(MallocMetadata))*2-sizeof(MallocMetadata);
+        setMetaData(currMetaData, newSize);
         if(is_realloc && currMetaData->size >= size)
         {
             return currMetaData;
@@ -345,6 +353,7 @@ void *srealloc(void *oldp, size_t size) {
 
         new_ptr = sfree_aux(oldp, true, size);
         if(!new_ptr) new_ptr = (MallocMetadata*)smalloc(size);
+        //check if memmove here is correct, why do we put oldp into new_ptr?
         memmove(new_ptr, oldp, metaData->size);
         return new_ptr;
     } else {
