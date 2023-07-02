@@ -6,17 +6,23 @@
 #include <ostream>
 #include <sys/mman.h>
 #include <iostream>
+#include <cstdlib>
+#include <valarray>
+#include <ctime>
 
 const int BIG = 100000000;
 const int MAX_BLOCK_MEMORY = 128 * 1024;
 const int NUM_OF_MAX_BLOCK_SIZE = 32;
 const int HEAP_SIZE = MAX_BLOCK_MEMORY * NUM_OF_MAX_BLOCK_SIZE;
 const int AMOUNT_OF_BLOCK_TYPES = 11;
-const int MIN_SIZE = 128;
+const unsigned int MIN_SIZE = 128;
 
 void *heap_bottom;
 
 bool is_first_malloc = true;
+
+int cookies;
+int mmap_total_size = 0;
 int num_allocated_blocks = 0;
 int num_allocated_bytes = 0;
 int num_meta_data_bytes = 0;
@@ -24,12 +30,47 @@ int num_meta_data_bytes = 0;
 struct MallocMetadata {
     int cookie;
     size_t size;
+    bool is_free;
     MallocMetadata *next;
     MallocMetadata *prev;
 };
 MallocMetadata *block_array[AMOUNT_OF_BLOCK_TYPES];
 MallocMetadata *mapListHead =nullptr;
 
+void validateCookie(MallocMetadata* metadata)
+{
+    if(metadata->cookie != cookies) exit(0xdeadbeef);
+}
+
+
+void printBlockList()
+{
+    MallocMetadata* curr;
+    int counter;
+    std::cout << "=============================================================" << std::endl;
+    for(int i=0;i<AMOUNT_OF_BLOCK_TYPES;i++)
+    {
+        curr = block_array[i];
+        counter = 0;
+        while(curr)
+        {
+            counter+=1;
+            curr = curr->next;
+        }
+        std::cout << "Blocks of index: " << i << " Count:" << counter<< std::endl;
+
+    }
+
+    std::cout << "Mapped blocks:" << std::endl;
+    // print how many mmap'd blocks
+    curr = mapListHead;
+    counter = 0;
+    while(curr)
+    {
+        std::cout << "Block with size:" << curr->size << std::endl;
+        curr=curr->next;
+    }
+}
 void addNewMapRegion(MallocMetadata* newMemory)
 {
     if(mapListHead == nullptr)
@@ -43,6 +84,7 @@ void addNewMapRegion(MallocMetadata* newMemory)
 }
 
 void removeBlockFroMemoryList(MallocMetadata *currMemory) {
+    validateCookie(currMemory);
     MallocMetadata *temp = currMemory->prev;
     if (temp) {
         if (!currMemory->next) {
@@ -68,13 +110,15 @@ void removeBlockFroMemoryList(MallocMetadata *currMemory) {
         currMemory->prev = nullptr;
     }
 }
-void setMetaData(MallocMetadata *metadata, size_t size) {
+void setMetaData(MallocMetadata *metadata, size_t size, bool is_free) {
     metadata->size = size;
+    metadata->is_free = is_free;
+    metadata->cookie = cookies;
 }
 
 
 
-MallocMetadata *findBestFit(size_t size, int *power, int *currIndex) {
+MallocMetadata *findBestFit(size_t size,unsigned int *power, int *currIndex) {
     for (int i = 0; i < AMOUNT_OF_BLOCK_TYPES; i++) {
         if (size <= *power * MIN_SIZE) {
             if (block_array[i]) {
@@ -93,13 +137,19 @@ long getAddress(MallocMetadata *ptr) {
 }
 
 void addBlockToFreeList(MallocMetadata *blockMetaData, int blockIndex) {
-    MallocMetadata *curr = block_array[blockIndex];
-    if (!curr) {
-        curr = blockMetaData;
+    validateCookie(blockMetaData);
+    if (!block_array[blockIndex]) {
+        block_array[blockIndex] = blockMetaData;
         return;
     }
+
+    MallocMetadata *curr = block_array[blockIndex];
     while (curr->next && getAddress(curr) < getAddress(blockMetaData))
+    {
+        if(curr) validateCookie(curr);
         curr = curr->next;
+    }
+
 
     // all blocks have lower address than the given one
     if (!curr->next) {
@@ -125,6 +175,7 @@ void addBlockToFreeList(MallocMetadata *blockMetaData, int blockIndex) {
 }
 
 void removeBlockFromFreeList(MallocMetadata *currBlock, int blockIndex) {
+    validateCookie(currBlock);
     MallocMetadata *temp = currBlock->prev;
     if (temp) {
         if (!currBlock->next) {
@@ -156,15 +207,21 @@ MallocMetadata *getNextBlock(MallocMetadata *oldPtr, size_t new_size) {
 }
 
 MallocMetadata *splitBlock(MallocMetadata *currBlock, int blockPower, int blockIndex) {
+    validateCookie(currBlock);
     size_t old_size_of_block = currBlock->size + sizeof(MallocMetadata);
     // remove old block
     removeBlockFromFreeList(currBlock, blockIndex);
+
     // add 2 blocks = half size in the heap memory and add 1 to free list
     // currBlock becomes the next half size block
-    setMetaData(currBlock, old_size_of_block / 2 - sizeof(MallocMetadata));
-    addBlockToFreeList(currBlock, blockIndex - 1);
+    setMetaData(currBlock, old_size_of_block / 2 - sizeof(MallocMetadata), true);
+
     MallocMetadata *secondBlock = getNextBlock(currBlock, old_size_of_block / 2);
-    setMetaData(secondBlock, old_size_of_block / 2 - sizeof(MallocMetadata));
+    setMetaData(secondBlock, old_size_of_block / 2 - sizeof(MallocMetadata), true);
+
+    addBlockToFreeList(currBlock, blockIndex - 1);
+    addBlockToFreeList(secondBlock, blockIndex - 1);
+
     return secondBlock;
 }
 
@@ -180,10 +237,13 @@ int getBlockIndex(size_t size) {
 
 void *allocateSize(size_t size) {
     //we get the size + metadata size here
-    int power = 1, currIndex = 0;
+    unsigned int power = 1;
+    int currIndex = 0;
     // we change currIndex inside the findBestFit function because we pass a pointer
     MallocMetadata *metaData = findBestFit(size, &power, &currIndex);
-    // TODO: check what if (!metaData)
+    validateCookie(metaData);
+    if(!metaData) return nullptr;
+
     //this check is ok because size = meta.size + sizeof(meta)
     while (currIndex > 0 && (power * MIN_SIZE) / 2 >= size) {
         metaData = splitBlock(metaData, power, currIndex);
@@ -193,10 +253,12 @@ void *allocateSize(size_t size) {
         power /= 2;
     }
 
+    removeBlockFromFreeList(metaData, currIndex);
+    setMetaData(metaData, metaData->size, false);
+
     // TODO: Should we add to allocated while spliting blocks? (Creating free blocks)
     // TODO: or only at the end?
-    num_allocated_bytes += size - sizeof(MallocMetadata);
-    return metaData;
+    return (void*)((char*)metaData + sizeof(MallocMetadata));
 }
 
 
@@ -213,16 +275,15 @@ void initializeBlockArray() {
     MallocMetadata *currMetaData;
     for (int i = 0; i < NUM_OF_MAX_BLOCK_SIZE; i++) {
         currMetaData = (MallocMetadata *) curr;
-        setMetaData(currMetaData, MAX_BLOCK_MEMORY - sizeof(MallocMetadata));
-
+        setMetaData(currMetaData, MAX_BLOCK_MEMORY - sizeof(MallocMetadata), true);
         // increase curr
-        curr = incVoidPtr(curr, MAX_BLOCK_MEMORY);
         if (!block_array[AMOUNT_OF_BLOCK_TYPES - 1]) {
             block_array[AMOUNT_OF_BLOCK_TYPES - 1] = currMetaData;
         } else {
             last->next = currMetaData;
             currMetaData->prev = last;
         }
+        curr = incVoidPtr(curr, MAX_BLOCK_MEMORY);
         last = currMetaData;
     }
 }
@@ -245,34 +306,33 @@ void *initializeFirstMalloc() {
 }
 
 void *smalloc(size_t size) {
-    if (!size || size > BIG)
-        return nullptr;
-
     if (is_first_malloc) {
+        std::srand(std::time(nullptr));
+        cookies = std::rand();
+        std::cout << cookies << std::endl;
         void *new_ptr = initializeFirstMalloc();
         if (!new_ptr) return nullptr;
 
         num_allocated_blocks = 32;
-        num_allocated_bytes = 32 * MAX_BLOCK_MEMORY;
-        num_meta_data_bytes = 32 * sizeof(MallocMetadata);
-
         is_first_malloc = false;
     }
+    if (!size || size > BIG)
+        return nullptr;
+
 
     void *new_ptr;
     if (size + sizeof (MallocMetadata) >= MAX_BLOCK_MEMORY) {
-        // TODO: handle memory region here
+        // TODO: handle mmap error failed
         MallocMetadata *data = (MallocMetadata*)mmap(NULL, size +sizeof(MallocMetadata),
-                              PROT_READ | PROT_WRITE, MAP_ANONYMOUS,
+                              PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE,
                               -1, 0);
 
-        setMetaData(data, size);
+        setMetaData(data, size, false);
         addNewMapRegion(data);
 
-        num_meta_data_bytes+= sizeof(MallocMetadata);
         num_allocated_blocks +=1;
-        num_allocated_bytes += size;
-        return data;
+        mmap_total_size += size + sizeof(MallocMetadata);
+        return (void*)((char*)data + sizeof(MallocMetadata));
     }
 
     // allocate the size while splitting blocks (all stats handled inside)
@@ -291,6 +351,7 @@ void *scalloc(size_t num, size_t size) {
 
 
 MallocMetadata *getBuddyBlock(MallocMetadata *currMetaData) {
+    validateCookie(currMetaData);
     long addr = (long) currMetaData;
     //I think this needs to be the size of the block for XOR to work so added metadata size
     size_t size = currMetaData->size + sizeof(MallocMetadata);
@@ -300,6 +361,7 @@ MallocMetadata *getBuddyBlock(MallocMetadata *currMetaData) {
     MallocMetadata *curr = block_array[getBlockIndex(size)];
     while (curr) {
         if (buddyAddr == (long) curr) break;
+        validateCookie(curr);
         curr = curr->next;
     }
     return curr;
@@ -308,7 +370,19 @@ MallocMetadata *getBuddyBlock(MallocMetadata *currMetaData) {
 bool isFreeBlock(MallocMetadata *ptr) {
     MallocMetadata *curr = block_array[getBlockIndex(ptr->size)];
     while (curr) {
+        validateCookie(curr);
         if ((long) ptr == (long) curr) return true;
+        curr = curr->next;
+    }
+    return false;
+}
+
+bool canBeFreedInMapped(MallocMetadata* p)
+{
+    MallocMetadata* curr = mapListHead;
+    while(curr)
+    {
+        if((long)p == long(curr)) return true;
         curr = curr->next;
     }
     return false;
@@ -320,43 +394,48 @@ MallocMetadata* sfree_aux(void *p, bool is_realloc = false, size_t size=0)
 
     // I think we need to do p - metadatasize for this to work
     MallocMetadata *currMetaData = (MallocMetadata *) ((char *)p - sizeof(MallocMetadata));
-    if(currMetaData->size+sizeof(currMetaData) > 128000)
+    validateCookie(currMetaData);
+    if(currMetaData->size+sizeof(currMetaData) > MAX_BLOCK_MEMORY)
     {
+        if(!canBeFreedInMapped(currMetaData)) return nullptr;
         removeBlockFroMemoryList(currMetaData);
-        munmap((void*)currMetaData, currMetaData->size);
-        num_meta_data_bytes -= sizeof(MallocMetadata);
-        num_allocated_bytes -= size; // THIS IS FROM PIAZZA @568
+        mmap_total_size -= currMetaData->size + sizeof(MallocMetadata);
+        munmap((void*)currMetaData, currMetaData->size + sizeof(MallocMetadata));
+
         num_allocated_blocks -=1;
-        // TODO: WHAT TO DO WHEN FREEING WITH ALLOCATED BLOCKS
+
         return nullptr;
     }
     if (isFreeBlock(currMetaData)) return nullptr;
+    if(!isFreeBlock(currMetaData) && currMetaData->is_free) return nullptr;
 
     // check if buddy exists using the address (getAddress) is inside the free list (important)
     // if it does exist remove the buddy from free list and call UniteBlocks()
     // run this logic while there is a buddy and the block index is under 10
     MallocMetadata *buddyBlock = getBuddyBlock(currMetaData);
-    bool isFirst = true;
     while (buddyBlock && getBlockIndex(buddyBlock->size + sizeof(MallocMetadata)) < AMOUNT_OF_BLOCK_TYPES - 1) {
         removeBlockFromFreeList(buddyBlock, getBlockIndex(buddyBlock->size + sizeof(MallocMetadata)));
+
         if ((long) currMetaData > (long) buddyBlock) {
+            setMetaData(currMetaData, currMetaData->size, true);
             currMetaData = buddyBlock;
+        }
+        else
+        {
+            setMetaData(buddyBlock, buddyBlock->size, true);
         }
         //changed the new size to be correct
         long newSize = (currMetaData->size+sizeof(MallocMetadata))*2-sizeof(MallocMetadata);
-        setMetaData(currMetaData, newSize);
+        setMetaData(currMetaData, newSize, true);
 
-        if(!isFirst)
-        {
-            // EDGE-CASE = the blocks number stays the same on first union
-            num_allocated_blocks -=1;
-        }
+        num_allocated_blocks -=1;
         if(is_realloc && currMetaData->size >= size)
         {
+            setMetaData(currMetaData, newSize, false);
             return currMetaData;
         }
-        isFirst =false;
         buddyBlock = getBuddyBlock(currMetaData);
+
     }
 
     // after the while loop add the new block to the free list
@@ -375,16 +454,22 @@ void *srealloc(void *oldp, size_t size) {
     }
     MallocMetadata* new_ptr;
     MallocMetadata *metaData = (MallocMetadata *) ((char *) oldp - sizeof(MallocMetadata));
+    validateCookie(metaData);
     if (size > metaData->size) {
-        if(size + sizeof(MallocMetadata) > 128000)
+        if(size + sizeof(MallocMetadata) > MAX_BLOCK_MEMORY)
         {
             sfree_aux(oldp);
             return smalloc(size);
         }
         if(isFreeBlock(metaData)) return nullptr;
-
+        if(!isFreeBlock(metaData) && metaData->is_free) return nullptr;
         new_ptr = sfree_aux(oldp, true, size);
-        if(!new_ptr) new_ptr = (MallocMetadata*)smalloc(size);
+        if(!new_ptr)
+        {
+            new_ptr = (MallocMetadata*)smalloc(size);
+            new_ptr = (MallocMetadata*)((char*)new_ptr - sizeof(MallocMetadata));
+        }
+        new_ptr = (MallocMetadata*)((char*)new_ptr + sizeof(MallocMetadata));
         //check if memmove here is correct, why do we put oldp into new_ptr?
         memmove(new_ptr, oldp, metaData->size);
         return new_ptr;
@@ -428,35 +513,24 @@ size_t _num_allocated_blocks() {
     return num_allocated_blocks;
 }
 
-size_t _num_allocated_bytes() {
-    return num_allocated_bytes;
-}
+
 
 size_t _num_meta_data_bytes() {
-    return num_meta_data_bytes;
+    return _num_allocated_blocks() * sizeof(MallocMetadata);
+}
+
+size_t _num_allocated_bytes() {
+    if(is_first_malloc) return 0;
+    return HEAP_SIZE + mmap_total_size - _num_meta_data_bytes();
 }
 
 size_t _size_meta_data() {
     return sizeof(MallocMetadata);
 }
 
-void printBlockList()
-{
-    MallocMetadata* curr;
-    for(int i=0;i<AMOUNT_OF_BLOCK_TYPES;i++)
-    {
-        curr = block_array[i];
-        std::cout << "Blocks of index: " << i << std::endl;
-        while(curr)
-        {
-            std::cout << "Size:" << curr->size << std::endl;
-            curr = curr->next;
-        }
-    }
-}
-int main() {
-//    std::cout << (getBlockIndex(MAX_BLOCK_MEMORY / 2)) << std::endl;
-    smalloc(50);
-    printBlockList(); // TODO: check why only 31 blocks are generated
-    return 0;
-}
+//int main() {
+//    void* ptr1 = smalloc(40);
+//
+//    // Reallocate to a larger size
+//    return 0;
+//}
