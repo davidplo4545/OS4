@@ -129,7 +129,6 @@ MallocMetadata *findBestFit(size_t size,unsigned int *power, int *currIndex) {
         }
         *power *= 2;
     }
-    //shouldn't get here
     return nullptr;
 }
 
@@ -256,8 +255,6 @@ void *allocateSize(size_t size) {
     removeBlockFromFreeList(metaData, currIndex);
     setMetaData(metaData, metaData->size, false);
 
-    // TODO: Should we add to allocated while spliting blocks? (Creating free blocks)
-    // TODO: or only at the end?
     return (void*)((char*)metaData + sizeof(MallocMetadata));
 }
 
@@ -382,6 +379,7 @@ bool canBeFreedInMapped(MallocMetadata* p)
     MallocMetadata* curr = mapListHead;
     while(curr)
     {
+        validateCookie(curr);
         if((long)p == long(curr)) return true;
         curr = curr->next;
     }
@@ -502,6 +500,7 @@ size_t _num_free_bytes() {
     {
         current = block_array[i];
         while (current != nullptr) {
+            validateCookie(current);
             sum+=current->size;
             current = current->next;
         }
