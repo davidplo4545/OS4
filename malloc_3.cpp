@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <valarray>
 #include <ctime>
+#include <sys/wait.h>
 
 const int BIG = 100000000;
 const int MAX_BLOCK_MEMORY = 128 * 1024;
@@ -222,7 +223,7 @@ MallocMetadata *splitBlock(MallocMetadata *currBlock, int blockPower, int blockI
     addBlockToFreeList(currBlock, blockIndex - 1);
     addBlockToFreeList(secondBlock, blockIndex - 1);
 
-    return secondBlock;
+    return currBlock;
 }
 
 int getBlockIndex(size_t size) {
@@ -241,9 +242,8 @@ void *allocateSize(size_t size) {
     int currIndex = 0;
     // we change currIndex inside the findBestFit function because we pass a pointer
     MallocMetadata *metaData = findBestFit(size, &power, &currIndex);
-    validateCookie(metaData);
     if(!metaData) return nullptr;
-
+    validateCookie(metaData);
     //this check is ok because size = meta.size + sizeof(meta)
     while (currIndex > 0 && (power * MIN_SIZE) / 2 >= size) {
         metaData = splitBlock(metaData, power, currIndex);
@@ -529,8 +529,16 @@ size_t _size_meta_data() {
 }
 
 //int main() {
-//    void* ptr1 = smalloc(40);
-//
-//    // Reallocate to a larger size
+//    int exitCode = 0xDEADBEEF & 0xFF;  // Keep only the lower 8 bits
+//    pid_t pid = fork();
+//    if (pid == 0) {  // Child process
+//        performCorruption();
+//        std::exit(0);  // Ensure child process terminates with the desired code
+//    } else {  // Parent process
+//        int status;
+//        waitpid(pid, &status, 0);
+//        std::cout << "Status:" << WIFEXITED(status) << std::endl;
+////        REQUIRE(WEXITSTATUS(status) == exitCode);
+//    }
 //    return 0;
 //}

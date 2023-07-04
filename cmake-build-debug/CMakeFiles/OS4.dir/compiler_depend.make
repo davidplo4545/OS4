@@ -179,12 +179,6 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
   /usr/include/c++/7/iostream \
   /usr/include/c++/7/istream \
   /usr/include/c++/7/bits/istream.tcc \
-  /usr/include/c++/7/vector \
-  /usr/include/c++/7/bits/stl_construct.h \
-  /usr/include/c++/7/bits/stl_uninitialized.h \
-  /usr/include/c++/7/bits/stl_vector.h \
-  /usr/include/c++/7/bits/stl_bvector.h \
-  /usr/include/c++/7/bits/vector.tcc \
   /usr/include/c++/7/valarray \
   /usr/include/c++/7/cmath \
   /usr/include/math.h \
@@ -203,6 +197,7 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
   /usr/include/c++/7/bits/algorithmfwd.h \
   /usr/include/c++/7/bits/stl_heap.h \
   /usr/include/c++/7/bits/stl_tempbuf.h \
+  /usr/include/c++/7/bits/stl_construct.h \
   /usr/include/c++/7/bits/uniform_int_dist.h \
   /usr/include/c++/7/limits \
   /usr/include/c++/7/bits/valarray_array.h \
@@ -213,8 +208,52 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
   /usr/include/c++/7/bits/gslice.h \
   /usr/include/c++/7/bits/gslice_array.h \
   /usr/include/c++/7/bits/mask_array.h \
-  /usr/include/c++/7/bits/indirect_array.h
+  /usr/include/c++/7/bits/indirect_array.h \
+  /usr/include/c++/7/ctime \
+  /usr/include/x86_64-linux-gnu/sys/wait.h \
+  /usr/include/signal.h \
+  /usr/include/x86_64-linux-gnu/bits/signum.h \
+  /usr/include/x86_64-linux-gnu/bits/signum-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h \
+  /usr/include/x86_64-linux-gnu/bits/siginfo-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/siginfo-consts.h \
+  /usr/include/x86_64-linux-gnu/bits/siginfo-consts-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigval_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h \
+  /usr/include/x86_64-linux-gnu/bits/sigevent-consts.h \
+  /usr/include/x86_64-linux-gnu/bits/sigaction.h \
+  /usr/include/x86_64-linux-gnu/bits/sigcontext.h \
+  /usr/include/x86_64-linux-gnu/bits/types/stack_t.h \
+  /usr/include/x86_64-linux-gnu/sys/ucontext.h \
+  /usr/include/x86_64-linux-gnu/bits/sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/ss_flags.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/sigthread.h
 
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigstack.h:
+
+/usr/include/x86_64-linux-gnu/sys/ucontext.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigcontext.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sigval_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/siginfo-consts.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/signum.h:
+
+/usr/include/x86_64-linux-gnu/sys/wait.h:
+
+/usr/include/c++/7/ctime:
 
 /usr/include/c++/7/bits/mask_array.h:
 
@@ -232,6 +271,8 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/c++/7/bits/uniform_int_dist.h:
 
+/usr/include/c++/7/bits/stl_construct.h:
+
 /usr/include/c++/7/bits/algorithmfwd.h:
 
 /usr/include/c++/7/bits/stl_algo.h:
@@ -248,14 +289,6 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
-/usr/include/c++/7/bits/vector.tcc:
-
-/usr/include/c++/7/bits/stl_vector.h:
-
-/usr/include/c++/7/bits/stl_uninitialized.h:
-
-/usr/include/c++/7/bits/stl_construct.h:
-
 /usr/include/c++/7/iostream:
 
 /usr/include/x86_64-linux-gnu/bits/mman-linux.h:
@@ -265,6 +298,8 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 /usr/include/c++/7/bits/ostream.tcc:
 
 /usr/include/x86_64-linux-gnu/c++/7/bits/ctype_inline.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h:
 
 /usr/include/x86_64-linux-gnu/c++/7/bits/c++locale.h:
 
@@ -277,6 +312,10 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 /usr/include/c++/7/debug/assertions.h:
 
 /usr/include/c++/7/bits/stl_iterator_base_types.h:
+
+/usr/include/x86_64-linux-gnu/bits/siginfo-arch.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
@@ -334,6 +373,8 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/c++/7/ext/atomicity.h:
 
+/usr/include/signal.h:
+
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h:
@@ -351,8 +392,6 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
 
 /usr/include/c++/7/bits/ptr_traits.h:
-
-/usr/include/c++/7/vector:
 
 /usr/include/c++/7/bits/predefined_ops.h:
 
@@ -376,7 +415,11 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/features.h:
 
+/usr/include/x86_64-linux-gnu/bits/sigthread.h:
+
 /usr/include/c++/7/ext/new_allocator.h:
+
+/usr/include/x86_64-linux-gnu/bits/ss_flags.h:
 
 /usr/include/c++/7/exception:
 
@@ -424,9 +467,13 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
+/usr/include/x86_64-linux-gnu/bits/signum-generic.h:
+
 /usr/include/c++/7/ostream:
 
 /usr/include/c++/7/bits/locale_classes.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/stack_t.h:
 
 /usr/include/x86_64-linux-gnu/c++/7/bits/cpu_defines.h:
 
@@ -458,6 +505,8 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/x86_64-linux-gnu/c++/7/bits/error_constants.h:
 
+/usr/include/x86_64-linux-gnu/bits/sigevent-consts.h:
+
 /usr/include/c++/7/ios:
 
 /usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h:
@@ -487,8 +536,6 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
 
 /usr/include/c++/7/utility:
-
-/usr/include/c++/7/bits/stl_bvector.h:
 
 /usr/include/c++/7/string:
 
@@ -536,6 +583,8 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
 
+/usr/include/x86_64-linux-gnu/bits/siginfo-consts-arch.h:
+
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
@@ -577,6 +626,8 @@ CMakeFiles/OS4.dir/malloc_3.cpp.o: /mnt/c/Users/david/Desktop/Operating\ Systems
 /usr/include/c++/7/cstdlib:
 
 /usr/include/asm-generic/errno.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigaction.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
 
